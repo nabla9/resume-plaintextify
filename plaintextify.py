@@ -35,7 +35,7 @@ def adjust_spaces(letter):
 
 
 def make_bullets(letter):
-    return re.sub(r'\\item +', r'\* ', letter)
+    return letter.replace(r'\item ', '\n* ')
 
 
 def remove_functions(letter):
@@ -43,8 +43,8 @@ def remove_functions(letter):
         return match_obj[1].upper()
     # Convert smallcap-case to upper
     letter = re.sub(r'\\textsc{(\w+?)}', smallcaps_to_upper, letter)
-    # Remove other commands
-    letter = re.sub(r'\\.+?{(\w+?)}', r'\1', letter)
+    # Remove other commands (but not vspace)
+    letter = re.sub(r'\\(?!vspace).+?{(.*?)}', r'\1', letter)  # TODO: maybe just split up vspace component of that function
     return letter
 
 
