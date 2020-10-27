@@ -1,0 +1,4 @@
+# ignore compiled code
+*.pyc
+wil_letter_gen.tex
+.idea/*
