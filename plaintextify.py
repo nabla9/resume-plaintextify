@@ -1,14 +1,18 @@
 import re
+import os
 
 
 def plaintextify_letter(file):
     with open(file, 'r') as tex:
-        (body,) = re.findall(r'%pt_begin(.*)%pt_end', tex.read(), re.DOTALL)
+        (body,) = re.findall(r'%pt_begin\n?(.*)%pt_end', tex.read(), re.DOTALL)
     body = remove_texenvs(body)
     body = remove_functions(body)
     body = adjust_spaces(body)
     body = make_bullets(body)
-    return body
+
+    new_file = re.sub(r'(.*).tex', r'\1.txt', file)
+    with open(new_file, 'w') as txt:
+        txt.write(body)
 
 
 def remove_texenvs(letter):
@@ -30,7 +34,7 @@ def adjust_spaces(letter):
         coeff = 2 if not match_obj[1] else int(match_obj[1])+1
         return '\n'*coeff
     # Baseline skips
-    letter = re.sub(r'\\vspace{(\d*)\\baselineskip}', convert_skip, letter)
+    letter = re.sub(r'[ \n]*\\vspace{(\d*)\\baselineskip}[ \n]*', convert_skip, letter)
     return letter
 
 
@@ -44,7 +48,15 @@ def remove_functions(letter):
     # Convert smallcap-case to upper
     letter = re.sub(r'\\textsc{(\w+?)}', smallcaps_to_upper, letter)
     # Remove other commands (but not vspace)
-    letter = re.sub(r'\\(?!vspace).+?{(.*?)}', r'\1', letter)  # TODO: maybe just split up vspace component of that function
+    letter = re.sub(r'\\(?!vspace).+?{(.*?)}', r'\1', letter)  # TODO: just split up vspace component of that function
     return letter
 
 
+if __name__ == '__main__':
+    # pick file to be first encountered if plaintextify run as a script
+    for path in os.listdir('.'):
+        if path[-4:] == '.tex':
+            tex_file = path
+            break
+    print('Found file! converting %s' % tex_file)
+    plaintextify_letter(tex_file)
