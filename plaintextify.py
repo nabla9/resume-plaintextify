@@ -103,11 +103,17 @@ def remove_functions(letter):
     return letter
 
 
-# Allows this module to be run as a script rather than imported, converts first .tex encountered.
+# Allows this module to be run as a script rather than imported
 if __name__ == '__main__':
-    for path in os.listdir('.'):
-        if path[-4:] == '.tex':
-            tex_file = path
-            break
-    print('Found file! converting %s' % tex_file)
-    plaintextify_letter(tex_file)
+    tex_paths = [path for path in os.listdir('.') if path[-4:] == '.tex']
+    if not tex_paths:
+        print('No tex file found...')
+    elif len(tex_paths) == 1:
+        print('Found single file! converting %s' % tex_paths[0])
+        plaintextify_letter(tex_paths[0])
+    else:
+        print('Found .tex files! Input number to convert.')
+        for idx, path in enumerate(tex_paths):
+            print('%s: %s' % (idx, path))
+        choice = int(input('Choice:'))
+        plaintextify_letter(tex_paths[choice])
