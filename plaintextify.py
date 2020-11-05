@@ -99,7 +99,7 @@ def remove_functions(letter):
     # Convert smallcap-case to upper
     letter = re.sub(r'\\textsc{(\w+?)}', smallcaps_to_upper, letter)
     # Remove other commands (but not vspace)
-    letter = re.sub(r'\\(?!vspace).+?{(.*?)}', r'\1', letter)  # TODO: just split up vspace component of that function
+    letter = re.sub(r'\\(?!vspace)\w+?{(.*?)}', r'\1', letter)  # TODO: just split up vspace component of that function
     return letter
 
 
