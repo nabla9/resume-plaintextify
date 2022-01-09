@@ -2,31 +2,26 @@ import re
 import os
 
 
-def plaintextify_letter(file):
-    """Takes a .tex file as input and outputs a plaintext-formatted cover letter (for copy and paste into a field).
+def plaintextify_letter(tex_path):
+    """Outputs a plaintext-formatted cover letter (for copy and paste into a field).
 
-    :param file: An input .tex file
-
-    This function applies sub-functions remove_texenvs, remove_functions, adjust_spaces, and make_bullets.
-
+    Body of letter is extracted between %pt_begin and %pt_end in the .tex source file.
     """
-    with open(file, 'r') as tex:
+
+    with open(tex_path, 'r') as tex:
         (body,) = re.findall(r'%pt_begin\n?(.*)%pt_end', tex.read(), re.DOTALL)
     body = remove_texenvs(body)
     body = remove_functions(body)
-    body = adjust_spaces(body)
+    body = normalize_spaces(body)
     body = make_bullets(body)
 
-    new_file = re.sub(r'(.*).tex', r'\1.txt', file)
+    new_file = re.sub(r'(.*).tex', r'\1.txt', tex_path)
     with open(new_file, 'w') as txt:
         txt.write(body)
 
 
 def remove_texenvs(letter):
-    """Strips a string of tex environments.
-
-    :param str letter: An input text string.
-    :return str: A string with opening/closing tex environments stripped.
+    """Strips environments from .tex file.
 
     This function removes opening/closing environments in the following way:
     \begin{equation*}
@@ -39,11 +34,8 @@ def remove_texenvs(letter):
     return letter
 
 
-def adjust_spaces(letter):
+def normalize_spaces(letter):
     """Converts linebreaks to single spaces and newlines to new paragraphs.
-
-    :param str letter: An input text string.
-    :return str: A string with spaces adjusted into block-paragraph format.
 
     This function assumes a .tex document is formatted for Git version control, with each sentence on its own line.
     It does the following:
@@ -80,9 +72,6 @@ def make_bullets(letter):
 
 def remove_functions(letter):
     """Strips LaTeX functions of the form \fun{thing}.
-
-    :param str letter: An input text string.
-    :return str: A string with functions removed.
 
     Functions are stripped and thing is returned instead, *although* \textsc function returns an all-caps string.
     """
