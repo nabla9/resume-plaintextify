@@ -8,15 +8,15 @@ def plaintextify_letter(tex_path):
     Body of letter is extracted between %pt_begin and %pt_end in the .tex source file.
     """
 
-    with open(tex_path, 'r') as tex:
-        (body,) = re.findall(r'%pt_begin\n?(.*)%pt_end', tex.read(), re.DOTALL)
+    with open(tex_path, "r") as tex:
+        (body,) = re.findall(r"%pt_begin\n?(.*)%pt_end", tex.read(), re.DOTALL)
     body = remove_texenvs(body)
     body = remove_functions(body)
     body = normalize_spaces(body)
     body = make_bullets(body)
 
-    new_file = re.sub(r'(.*).tex', r'\1.txt', tex_path)
-    with open(new_file, 'w') as txt:
+    new_file = re.sub(r"(.*).tex", r"\1.txt", tex_path)
+    with open(new_file, "w") as txt:
         txt.write(body)
 
 
@@ -30,7 +30,9 @@ def remove_texenvs(letter):
     """
     subs = 1
     while subs != 0:
-        letter, subs = re.subn(r'\\begin{([^\n]*?)}(.+?)\\end{\1}', r'\2', letter, flags=re.DOTALL)
+        letter, subs = re.subn(
+            r"\\begin{([^\n]*?)}(.+?)\\end{\1}", r"\2", letter, flags=re.DOTALL
+        )
     return letter
 
 
@@ -43,9 +45,9 @@ def normalize_spaces(letter):
         2. Converts newlines (with any padding linebreaks and spaces) into a double newline;
         3. Converts \\ (with any space padding) into a single newline.
     """
-    letter = re.sub(r'( )*(\n)( )*', ' ', letter)  # Single spaces within paragraphs
-    letter = re.sub(r'[ \n]*\\newline[ \n]*', r'\n\n', letter)  # Paragraph breaks
-    letter = re.sub(r'[ \n]*\\\\[ \n]*', r'\n', letter)  # Single line breaks
+    letter = re.sub(r"( )*(\n)( )*", " ", letter)  # Single spaces within paragraphs
+    letter = re.sub(r"[ \n]*\\newline[ \n]*", r"\n\n", letter)  # Paragraph breaks
+    letter = re.sub(r"[ \n]*\\\\[ \n]*", r"\n", letter)  # Single line breaks
 
     def convert_skip(match_obj):
         """Converts vertical space environment into an appropriate number of newlines.
@@ -55,9 +57,10 @@ def normalize_spaces(letter):
 
         Each \baselineskip is converted into the same number (+1) of linebreaks.
         """
-        coeff = 2 if not match_obj[1] else int(match_obj[1])+1
-        return '\n'*coeff
-    letter = re.sub(r'[ \n]*\\vspace{(\d*)\\baselineskip}[ \n]*', convert_skip, letter)  # Baseline skips
+        coeff = 2 if not match_obj[1] else int(match_obj[1]) + 1
+        return "\n" * coeff
+
+    letter = re.sub(r"[ \n]*\\vspace{(\d*)\\baselineskip}[ \n]*", convert_skip, letter)
     return letter
 
 
@@ -67,7 +70,7 @@ def make_bullets(letter):
     :param str letter: An input text string.
     :return str: A string with bullets converted.
     """
-    return letter.replace(r'\item ', '\n* ')
+    return letter.replace(r"\item ", "\n* ")
 
 
 def remove_functions(letter):
@@ -75,23 +78,25 @@ def remove_functions(letter):
 
     Functions are stripped and thing is returned instead, *although* \textsc function returns an all-caps string.
     """
+
     def smallcaps_to_upper(match_obj):
         return match_obj[1].upper()
-    letter = re.sub(r'\\textsc{(\w+?)}', smallcaps_to_upper, letter)
-    letter = re.sub(r'\\(?!vspace)\w+?{(.*?)}', r'\1', letter)  # vspace treated separately
+
+    letter = re.sub(r"\\textsc{(\w+?)}", smallcaps_to_upper, letter)
+    letter = re.sub(r"\\(?!vspace)\w+?{(.*?)}", r"\1", letter)  # \vspace
     return letter
 
 
-if __name__ == '__main__':
-    tex_paths = [path for path in os.listdir('.') if path[-4:] == '.tex']
+if __name__ == "__main__":
+    tex_paths = [path for path in os.listdir(".") if path[-4:] == ".tex"]
     if not tex_paths:
-        print('No tex file found...')
+        print("No tex file found...")
     elif len(tex_paths) == 1:
-        print('Found single file! converting %s' % tex_paths[0])
+        print("Found single file! converting %s" % tex_paths[0])
         plaintextify_letter(tex_paths[0])
     else:
-        print('Found .tex files! Input number to convert.')
+        print("Found .tex files! Input number to convert.")
         for idx, path in enumerate(tex_paths):
-            print('%s: %s' % (idx, path))
-        choice = int(input('Choice:'))
+            print("%s: %s" % (idx, path))
+        choice = int(input("Choice:"))
         plaintextify_letter(tex_paths[choice])
